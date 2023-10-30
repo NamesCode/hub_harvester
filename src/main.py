@@ -31,29 +31,41 @@ print(limit_reset)
 
 # get the ORG in a Github api instance
 ORG_USER = g.get_user(ORG)
+
 # repo = user.get_repo("emacs")
 
 for repo in ORG_USER.get_repos():
     print(repo.stargazers_count)
     print(repo.name)
 
-    for issue in repo.get_issues():
+    for issue in repo.get_issues("none", "all"):
+        print("issue:" + str(issue.id))
+        print(str(issue.pull_request))
+        print(issue.created_at)
+        for comment in issue.get_comments():
+            print("assignee:" + str(comment.user.name))
+            print(comment.created_at)
         if issue.state == "closed":
             print(issue.closed_at)
-            print(issue.closed_by)
-            print(issue.created_at)
+            print(issue.closed_by.name)
             for assignee in issue.assignees:
-                print(assignee)
+                print("assignee:" + str(assignee.name))
 
-    for pull in repo.get_pulls():
+    for pull in repo.get_pulls("closed"):
         if pull.merged:
+            print("pull:" + str(pull.id))
+            for comment in pull.get_comments():
+                print(comment.user.name)
+                print(comment.created_at)
             print(pull.created_at)
             print(pull.commits)
-            print(pull.user)
+            for commit in pull.get_commits():
+                print(commit.sha)
+            print(pull.user.name)
             print(pull.merged_at)
-            print(pull.merged_by)
+            print(pull.merged_by.name)
 
-    for commits in repo.get_commits():
+    for commits in repo.get_commits("all"):
         print(commits.sha)
         if commits.author != None:
             print(commits.author.name)
