@@ -13,9 +13,6 @@
           buildInputs = with pkgs; [
             python311
             python311Packages.pygithub
-            python311Packages.pprintpp
-            python311Packages.sqlite3
-            python311Packages.getpass
           ];
         };
       }
