@@ -4,14 +4,17 @@ from time import gmtime, strftime
 
 from github import Auth, Github
 
+# github organisation or user
+ORG = input("organisation or user to crawl: ")
+
 database = sqlite3.connect(
-    #    "ctp_database_" + strftime("%Y-%m-%d_%H:%M:%S", gmtime()) + ".sqlite3"  #TODO: uncomment for prod
-    "ctp_database.sqlite3"
+    ORG
+    + "_database_"
+    + strftime("%Y-%m-%d_%H:%M:%S", gmtime())
+    + ".sqlite3"  # TODO: uncomment for prod
 )
 db_cursor = database.cursor()
 
-# github organisation
-ORG = "Catppuccin"
 
 authorise = input("Authorise to github? (yl:yes login, yt:yes token, n:no): ")
 if authorise == "yl":
@@ -35,7 +38,8 @@ ORG_USER = g.get_user(ORG)
 
 db_cursor.execute("CREATE TABLE repos(name, stargazers)")
 db_cursor.execute(
-    "CREATE TABLE issues(repo, id, comment_usernames, comment_creation_dates, assignees, created_at, closed_at, closed_by )"
+    # "CREATE TABLE issues(repo, id, comment_usernames, comment_creation_dates, assignees, created_at, closed_at, closed_by )"
+    "CREATE TABLE issues(repo, id, comment_usernames, comment_creation_dates, assignees, created_at, closed_at )"
 )
 db_cursor.execute(
     "CREATE TABLE pulls(repo, id, comment_usernames, comment_creation_dates, commit_shas, created_at, created_by, merged_at, merged_by )"
@@ -47,12 +51,12 @@ issues_data = []
 pulls_data = []
 commits_data = []
 
-# for repo in ORG_USER.get_repos():
-repo = ORG_USER.get_repo(".github")
-if True:
+for repo in ORG_USER.get_repos():
     repo_name = repo.name
+    print("crawling " + repo_name)
     repos_data.append((repo_name, repo.stargazers_count))
 
+    print("getting issues for " + repo_name)
     for issue in repo.get_issues("none", "all"):
         #       print(issue.as_pull_request().url) #FIX: get this working at some point
 
@@ -86,22 +90,23 @@ if True:
             closed_at = issue.closed_at
             closed_by = (
                 issue.closed_by
-            )  # FIX: get this to give users name in future, currently jank but kinda works??
+            )  # FIX: get this to give users name in future, dont use since its broken as shit
             assignees = assignee_list
 
         issues_data.append(
             (
                 repo_name,
-                "issue:" + str(issue.id),
+                issue.id,
                 comment_usernames_list,
                 comment_creation_dates_list,
                 assignees,
                 issue.created_at,
                 closed_at,
-                closed_by,
+                # closed_by,
             )
         )
 
+    print("getting pulls for " + repo_name)
     for pull in repo.get_pulls("closed"):
         if pull.merged:
             comment_usernames_list = "["
@@ -129,7 +134,7 @@ if True:
             pulls_data.append(
                 (
                     repo_name,
-                    "pull:" + str(pull.id),
+                    pull.id,
                     comment_usernames_list,
                     comment_creation_dates_list,
                     commit_list,
@@ -140,8 +145,8 @@ if True:
                 )
             )
 
+    print("getting commits for " + repo_name)
     for commits in repo.get_commits():
-        print(commits.sha)
         if commits.author != None:
             commit_author = commits.author.name
             commit_creation_date = commits.author.created_at
@@ -153,14 +158,13 @@ if True:
             (repo_name, commits.sha, commit_author, commit_creation_date)
         )
 
-print(repos_data)
-print(issues_data)
-print(pulls_data)
-print(commits_data)
+print("Finished! :3")
 
 db_cursor.executemany("INSERT INTO repos VALUES(?, ?)", repos_data)
-db_cursor.executemany("INSERT INTO issues VALUES(?, ?, ?, ?, ?, ?, ?, ?)", issues_data)
-db_cursor.executemany(
-    "INSERT INTO issues VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", pulls_data
-)
-db_cursor.executemany("INSERT INTO issues VALUES(?, ?, ?, ?)", commits_data)
+# db_cursor.executemany("INSERT INTO issues VALUES(?, ?, ?, ?, ?, ?, ?, ?)", issues_data)
+db_cursor.executemany("INSERT INTO issues VALUES(?, ?, ?, ?, ?, ?, ?)", issues_data)
+db_cursor.executemany("INSERT INTO pulls VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", pulls_data)
+db_cursor.executemany("INSERT INTO commits VALUES(?, ?, ?, ?)", commits_data)
+
+database.commit()
+database.close()
