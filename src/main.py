@@ -1,6 +1,6 @@
 import sqlite3
 from getpass import getpass
-from time import gmtime, strftime
+from time import gmtime, sleep, strftime
 
 from github import Auth, Github
 
@@ -144,9 +144,12 @@ for repo in ORG_USER.get_repos():
         if commits.author != None:
             commit_author = commits.author.name
             commit_creation_date = commits.author.created_at
-        else:
+        if commits.committer != None:
             commit_author = commits.committer.name
             commit_creation_date = commits.committer.created_at
+        else:
+            commit_author = None
+            commit_creation_date = None
 
         commits_data.append(
             (repo_name, commits.sha, commit_author, commit_creation_date)
