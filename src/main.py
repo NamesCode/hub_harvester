@@ -8,10 +8,7 @@ from github import Auth, Github
 ORG = input("organisation or user to crawl: ")
 
 database = sqlite3.connect(
-    ORG
-    + "_database_"
-    + strftime("%Y-%m-%d_%H:%M:%S", gmtime())
-    + ".sqlite3"  # TODO: uncomment for prod
+    ORG + "_database_" + strftime("%Y-%m-%d_%H:%M:%S", gmtime()) + ".sqlite3"
 )
 db_cursor = database.cursor()
 
@@ -29,9 +26,6 @@ g = Github(auth=AUTH)
 
 limit = g.rate_limiting
 limit_reset = g.rate_limiting_resettime
-
-print(limit)
-print(limit_reset)
 
 # get the ORG in a Github api instance
 ORG_USER = g.get_user(ORG)
@@ -58,7 +52,7 @@ for repo in ORG_USER.get_repos():
 
     print("getting issues for " + repo_name)
     for issue in repo.get_issues("none", "all"):
-        #       print(issue.as_pull_request().url) #FIX: get this working at some point
+        # print(issue.as_pull_request().url) #FIX: get this working at some point
 
         comment_usernames_list = "["
         comment_creation_dates_list = "["
