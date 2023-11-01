@@ -1,6 +1,6 @@
 import sqlite3
 from getpass import getpass
-from time import gmtime, sleep, strftime
+from time import gmtime, strftime
 
 from github import Auth, Github
 
@@ -141,12 +141,13 @@ for repo in ORG_USER.get_repos():
 
     print("getting commits for " + repo_name)
     for commits in repo.get_commits():
-        if commits.author != None:
-            commit_author = commits.author.name
-            commit_creation_date = commits.author.created_at
         if commits.committer != None:
             commit_author = commits.committer.name
             commit_creation_date = commits.committer.created_at
+
+        if commits.author != None:
+            commit_author = commits.author.login
+            commit_creation_date = commits.author.created_at
         else:
             commit_author = None
             commit_creation_date = None
@@ -155,13 +156,20 @@ for repo in ORG_USER.get_repos():
             (repo_name, commits.sha, commit_author, commit_creation_date)
         )
 
-print("Finished! :3")
+    db_cursor.executemany("INSERT INTO repos VALUES(?, ?)", repos_data)
+    # db_cursor.executemany("INSERT INTO issues VALUES(?, ?, ?, ?, ?, ?, ?, ?)", issues_data)
+    db_cursor.executemany("INSERT INTO issues VALUES(?, ?, ?, ?, ?, ?, ?)", issues_data)
+    db_cursor.executemany(
+        "INSERT INTO pulls VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", pulls_data
+    )
+    db_cursor.executemany("INSERT INTO commits VALUES(?, ?, ?, ?)", commits_data)
 
-db_cursor.executemany("INSERT INTO repos VALUES(?, ?)", repos_data)
-# db_cursor.executemany("INSERT INTO issues VALUES(?, ?, ?, ?, ?, ?, ?, ?)", issues_data)
-db_cursor.executemany("INSERT INTO issues VALUES(?, ?, ?, ?, ?, ?, ?)", issues_data)
-db_cursor.executemany("INSERT INTO pulls VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", pulls_data)
-db_cursor.executemany("INSERT INTO commits VALUES(?, ?, ?, ?)", commits_data)
+    repos_data = []
+    issues_data = []
+    pulls_data = []
+    commits_data = []
+
+print("Finished! :3")
 
 database.commit()
 database.close()
