@@ -8,25 +8,25 @@ Data in the dump is stored in 4 different tables:
 ## Repos
 The table is labelled as `repos` with the following table structure:
 
-| name | stargazers |
-|------|------------|
-| str  | int        |
+| id  | name | stargazers |
+|-----|------|------------|
+| int | str  | int        |
 
 
 ## Issues
 The table is labelled as `issues` with the following table structure:
 
-| repo | id  | comment_usernames | comment_creation_dates | assignees | created_at | closed_at |
-|------|-----|-------------------|------------------------|-----------|------------|-----------|
-| str  | int | [ str ]           | [ date ]               | [ str ]   | date       | date      |
+| repo | issue_id  | comment_usernames | comment_creation_dates | assignees | created_at | closed_at |
+|------|-----------|-------------------|------------------------|-----------|------------|-----------|
+| str  | int       | [ str ]           | [ date ]               | [ str ]   | date       | date      |
 
 
 ## Pulls
 The table is labelled as `pulls` with the following table structure:
 
-| repo | id  | comment_usernames | comment_creation_dates | commit_shas | created_at | created_by | merged_at | merged_by |
-|------|-----|-------------------|------------------------|-------------|------------|------------|-----------|-----------|
-| str  | int | [ str ]           | [ date ]               | [ str ]     | date       | str        | date      | str       |
+| repo | pull_id  | comment_usernames | comment_creation_dates | commit_shas | created_at | created_by | merged_at | merged_by |
+|------|----------|-------------------|------------------------|-------------|------------|------------|-----------|-----------|
+| str  | int      | [ str ]           | [ date ]               | [ str ]     | date       | str        | date      | str       |
 
 
 ## Commits
